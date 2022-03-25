@@ -39,6 +39,9 @@ private:
     {
         sampleRate = device->getCurrentSampleRate();
         blockSize = device->getCurrentBufferSizeSamples();
+
+        if (callback != nullptr)
+            callback->prepareToPlay (sampleRate, blockSize);
     }
 
     void audioDeviceStopped() override
