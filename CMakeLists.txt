@@ -10,6 +10,8 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE -DJUCE_USE_CURL=0)
 
 #-----------------------------------------
 
-add_executable(audio_test test/test_main.cpp)
-target_compile_features(audio_test PRIVATE cxx_std_14)
-target_link_libraries(audio_test PRIVATE ${PROJECT_NAME})
+if (BUILD_TEST)
+    add_executable(audio_test test/test_main.cpp)
+    target_compile_features(audio_test PRIVATE cxx_std_14)
+    target_link_libraries(audio_test PRIVATE ${PROJECT_NAME})
+endif()
