@@ -4,18 +4,12 @@
 
 struct AudioBackend::Pimpl : juce::AudioIODeviceCallback
 {
+    explicit Pimpl (AudioCallback& callback) : callback (callback) {}
+
     void openDefaultIODevice (int numInputChannels, int numOutputChannels)
     {
         audioDeviceManager.addAudioCallback (this);
         audioDeviceManager.initialiseWithDefaultDevices (numInputChannels, numOutputChannels);
-    }
-
-    void setCallback (AudioCallback* audioCallback)
-    {
-        callback = audioCallback;
-
-        if (callback != nullptr)
-            callback->prepareToPlay (sampleRate, blockSize);
     }
 
     void closeDevice()
@@ -24,15 +18,14 @@ struct AudioBackend::Pimpl : juce::AudioIODeviceCallback
     }
 
 private:
-    AudioCallback* callback = nullptr;
+    AudioCallback& callback;
     juce::AudioDeviceManager audioDeviceManager;
     double sampleRate = 0.0;
     int blockSize = 0;
 
     void audioDeviceIOCallback (const float** inputChannelData, int numInputChannels, float** outputChannelData, int numOutputChannels, int numSamples) override
     {
-        if (callback != nullptr)
-            callback->process (inputChannelData, outputChannelData, numInputChannels, numOutputChannels, numSamples);
+        callback.process (inputChannelData, outputChannelData, numInputChannels, numOutputChannels, numSamples);
     }
 
     void audioDeviceAboutToStart (juce::AudioIODevice* device) override
@@ -40,14 +33,12 @@ private:
         sampleRate = device->getCurrentSampleRate();
         blockSize = device->getCurrentBufferSizeSamples();
 
-        if (callback != nullptr)
-            callback->prepareToPlay (sampleRate, blockSize);
+        callback.prepareToPlay (sampleRate, blockSize);
     }
 
     void audioDeviceStopped() override
     {
-        if (callback != nullptr)
-            callback->releaseResources();
+        callback.releaseResources();
     }
 
     void audioDeviceError (const juce::String& errorMessage) override
@@ -63,16 +54,11 @@ void AudioBackend::PimplDeleter::operator() (Pimpl* toDelete)
 }
 
 
-AudioBackend::AudioBackend() : pimpl (std::unique_ptr<Pimpl, PimplDeleter> { new Pimpl() }) {}
+AudioBackend::AudioBackend (AudioCallback& callback) : pimpl (std::unique_ptr<Pimpl, PimplDeleter> { new Pimpl (callback) }) {}
 
 void AudioBackend::openDefaultIODevice (int numInputChannels, int numOutputChannels)
 {
     pimpl->openDefaultIODevice (numInputChannels, numOutputChannels);
-}
-
-void AudioBackend::registerCallback (AudioCallback* callback)
-{
-    pimpl->setCallback (callback);
 }
 
 void AudioBackend::closeDevice()

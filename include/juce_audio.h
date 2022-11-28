@@ -12,17 +12,16 @@ struct AudioCallback
 
 struct AudioBackend
 {
-    AudioBackend();
+    explicit AudioBackend (AudioCallback& callback);
 
     void openDefaultIODevice (int numInputChannels, int numOutputChannels);
-    void registerCallback (AudioCallback* callback);
     void closeDevice();
 
 private:
     struct Pimpl;
     struct PimplDeleter
     {
-        void operator()(Pimpl*);
+        void operator() (Pimpl*);
     };
 
     std::unique_ptr<Pimpl, PimplDeleter> pimpl;

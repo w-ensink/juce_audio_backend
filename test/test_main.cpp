@@ -27,9 +27,8 @@ private:
 int main()
 {
     TestCallback callback;
-    AudioBackend audioBackend;
+    AudioBackend audioBackend{ callback };
 
-    audioBackend.registerCallback (&callback);
     audioBackend.openDefaultIODevice (0, 2);
 
     std::this_thread::sleep_for (std::chrono::seconds (2));
