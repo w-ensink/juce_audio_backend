@@ -20,8 +20,6 @@ struct AudioBackend::Pimpl : juce::AudioIODeviceCallback
 private:
     AudioCallback& callback;
     juce::AudioDeviceManager audioDeviceManager;
-    double sampleRate = 0.0;
-    int blockSize = 0;
 
     void audioDeviceIOCallback (const float** inputChannelData, int numInputChannels, float** outputChannelData, int numOutputChannels, int numSamples) override
     {
@@ -30,8 +28,8 @@ private:
 
     void audioDeviceAboutToStart (juce::AudioIODevice* device) override
     {
-        sampleRate = device->getCurrentSampleRate();
-        blockSize = device->getCurrentBufferSizeSamples();
+        const auto sampleRate = device->getCurrentSampleRate();
+        const auto blockSize = device->getCurrentBufferSizeSamples();
 
         callback.prepareToPlay (sampleRate, blockSize);
     }
